@@ -12,15 +12,24 @@ x_listbox = 400
 
 
 # создаём или открываем файл с бд
-# conn = sqlite3.connect("E:\\Dimas\\Study\\MAI\\5 term\\trpo\\SDT-Course-Work\\Data.bd")
-# создаём курсор
-# c = conn.cursor()
+conn = sqlite3.connect("Data.bd")
+#создаём курсор
+c = conn.cursor()
+#c .execute("SELECT * FROM table1")
+#items = c.fetchall()
+#print(items)
+#conn.close()
 '''
 # add row in db
-c.execute("INSERT INTO table1 VALUES ('ДК МАИ', 'чипирование', 'прививка', '16.11.2020', '18.24', 100, 99, 322.69, 'Петров Петр Петрович', '25')")
+c.execute("INSERT INTO table1 VALUES ('Театр', 'выступление', 'чтото', '22.11.2020', '28:00', 300, 212, 1000, 'ФИО1', '132')")
 conn.commit()
-conn.close()
+c .execute("SELECT * FROM table1")
+items = c.fetchall()
+print(items)
 '''
+conn.close()
+
+#
 '''
 # создаём таблицы 
 c.execute("""CREATE TABLE table1(
@@ -59,14 +68,10 @@ events.update({'circus1':[1,2,3]})
 
 # главное окно
 root_init = create_window("start window", str(600), str(300), str(300), str(300)) # главное окно
-<<<<<<< HEAD
-listbox_places = create_listbox(root_init,  30)  # список заведений
-=======
 listbox_places = create_listbox(root_init, 'place', 30)  # список заведений
->>>>>>> 418d6b0ab9b66f7d24d84c3a2f49b8d57b34a7f7
 #scroll = Scrollbar(root_init)
 ent_input = create_entry(root_init, 30)
-btn_add_place = create_button(root_init, "Add place", 25)
+#btn_add_place = create_button(root_init, "Add place", 25)
 bnt_delete_place = create_button(root_init, "delete place", 25)
 btn_show_events = create_button(root_init, "show events", 25)
 lbl = create_label(root_init, 30, 'list of places')
@@ -75,7 +80,7 @@ lbl = create_label(root_init, 30, 'list of places')
 ent_input.place(x=x_init, y=y_init)
 #scroll.place(x=x_listbox+185, y=y_init)
 listbox_places.place(x=x_listbox, y=y_init)
-btn_add_place.place(x=x_init, y=y_init+30)
+#btn_add_place.place(x=x_init, y=y_init+30)
 bnt_delete_place.place(x=x_init, y=y_init+80)
 btn_show_events.place(x=x_init, y=y_init+130)
 lbl.place(x=x_listbox-10, y=y_init-20)
@@ -85,17 +90,11 @@ lbl.place(x=x_listbox-10, y=y_init-20)
 #listbox_places.config(yscrollcommand=scroll.set)
 
 # события на стартовом окне
-<<<<<<< HEAD
 # btn_add_place.config(command=lambda: btn_add_place_click(ent_input, places, listbox_places, events))
-# bnt_delete_place.config(command=lambda: btn_delete_place_click(listbox_places, places, events))
-=======
-'''
-btn_add_place.config(command=lambda: btn_add_place_click(ent_input, places, listbox_places, events))
-bnt_delete_place.config(command=lambda: btn_delete_place_click(listbox_places, places, events))
->>>>>>> 418d6b0ab9b66f7d24d84c3a2f49b8d57b34a7f7
+bnt_delete_place.config(command=lambda: btn_delete_place_click(listbox_places))
 
-btn_show_events.config(command=lambda: btn_show_events_click())
-'''
+#btn_show_events.config(command=lambda: btn_show_events_click())
+
 root_init.mainloop()
 
 
@@ -103,12 +102,20 @@ root_init.mainloop()
 #print(events)
 #file_places.close()
 #file_events.close()
+
+
+conn = sqlite3.connect("data.bd")
+c = conn.cursor()
+c .execute("SELECT * FROM table1")
+items = c.fetchall()
+print(items)
+
 print("done")
 
 
 '''
 
-    listbox_events = Listbox(root, selectmode=SINGLE)   # поле списка событий
+listbox_events = Listbox(root, selectmode=SINGLE)   # поле списка событий
 
 btn_dates = Button(root,  text='dates', command=lambda: btn_dates_click(events))                        # показывает мероприятия отсортированные по дате
 btn_more = Button(root, width=10, text='more', command=lambda: btn_more_click(listbox_events))
@@ -130,5 +137,6 @@ btn_dates.pack()
 
 
 root.mainloop()
-'''
+
 #print(events)
+'''

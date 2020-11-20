@@ -27,13 +27,8 @@ def create_button(root, txt, w):
     return btn
 
 
-<<<<<<< HEAD
-def create_listbox(root, w):
-    listbox_ = Listbox(root, selectmode=SINGLE, width=w)   # поле списка заведений
-=======
 def create_listbox(root, text, w):
     listbox_ = Listbox(root, selectmode=SINGLE, width=w)   # поле списка 
->>>>>>> 418d6b0ab9b66f7d24d84c3a2f49b8d57b34a7f7
     '''
     for i in listbox:
         listbox_.insert(END, i)   
@@ -41,10 +36,9 @@ def create_listbox(root, text, w):
     conn = sqlite3.connect("Data.bd")
     c = conn.cursor()
     c.execute(f"""SELECT {text} FROM table1""")
-    places = set(c.fetchall())
-    print(places)
+    places = c.fetchall()
+    places = set(places)
     for place in places:
         listbox_.insert(END, place[0])    
-    conn.commit()
     conn.close()
     return listbox_
