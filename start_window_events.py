@@ -1,6 +1,7 @@
 from tkinter import *
 import sqlite3
 
+
 def btn_show_events_click():
     import event_window
 
@@ -47,6 +48,10 @@ def btn_delete_place_click(listbox_):
     listbox_.delete(listbox_.curselection())
     conn = sqlite3.connect("Data.bd")
     c = conn.cursor()
+    c.execute("""SELECT id FROM Places WHERE name = (?)""", (temp,))
+    ID = c.fetchone()
     c.execute("""DELETE from Places WHERE name = (?)""", (temp,))
+    conn.commit()
+    c.execute("""DELETE from Events WHERE place_id = (?)""", (ID,))
     conn.commit()
     conn.close()
