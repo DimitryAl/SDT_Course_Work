@@ -29,10 +29,6 @@ def create_button(root, txt, w):
 
 def create_listbox(root, text, w):
     listbox_ = Listbox(root, selectmode=SINGLE, width=w)   # поле списка 
-    '''
-    for i in listbox:
-        listbox_.insert(END, i)   
-    '''
     conn = sqlite3.connect("Data.bd")
     c = conn.cursor()
     c.execute(f"""SELECT {text} FROM table1""")
