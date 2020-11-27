@@ -1,6 +1,14 @@
 from base_func import create_window, create_button, create_listbox
 from main import listbox_places
+#from event_window_events import btn_add_event_click, btn_delete_event_click
 
+def btn_add_event_click():
+    import add_event_window
+
+def btn_delete_event_click():
+    print()
+
+    
 y_init = 50
 x_init = 10
 x_listbox = 400 
@@ -22,6 +30,6 @@ bnt_delete_event.place(x=x_init, y=y_init+80)
 listbox_events.place(x=x_init+300,y=y_init)
 
 #события
-
+btn_add_event.config(command=lambda: btn_add_event_click())
 
 root_events.mainloop()

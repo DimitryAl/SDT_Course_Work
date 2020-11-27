@@ -2,8 +2,55 @@ import sqlite3
 from tkinter import *
 
 from base_func import create_window, create_entry, create_button, create_listbox, create_label
-from start_window_events import btn_show_events_click, btn_add_place_click, btn_delete_place_click
+#from start_window_events import btn_show_events_click, btn_add_place_click, btn_delete_place_click
 
+def btn_delete_place_click(listbox_):
+    temp = listbox_.curselection()
+    if temp == ():
+        return
+    if type(listbox_.get(temp)) == str:
+        temp = listbox_.get(temp)
+    elif type(listbox_.get(temp)) == tuple:
+        temp = listbox_.get(temp)[0]
+    listbox_.delete(listbox_.curselection())
+    conn = sqlite3.connect("Data.bd")
+    c = conn.cursor()
+    c.execute("""DELETE from Places WHERE name = (?)""", (temp,))
+    conn.commit()
+    conn.close()
+
+def btn_show_events_click():
+    import event_window
+
+def btn_add_place_click(text, listbox_):
+    if text.get() == "":
+        return
+    conn = sqlite3.connect("Data.bd")
+    c = conn.cursor()
+    c.execute("""SELECT name FROM Places""")
+    places = c.fetchall()
+    for i in range(len(places)):
+        if text.get() in places[i]:
+            return
+    if len(places) == 0:
+        ID = 0
+    else:
+        c.execute("""SELECT id FROM Places """)
+        ids = c.fetchall()
+        ID = -1 
+        for i in range(len(ids)):
+            temp = max(ids[i])
+            if temp > ID:
+                ID = temp
+    ID += 1
+    c.execute("""INSERT INTO Places VALUES (?, ?)""", (ID, text.get(),))
+    conn.commit()
+    conn.close()
+    listbox_.delete(0, last=END)
+    for i in places:
+       listbox_.insert(END, i)
+    listbox_.insert(END, text.get())
+    text.delete(0, last=END)
 
 # создаём или открываем файл с бд
 conn = sqlite3.connect("Data.bd")
@@ -36,8 +83,7 @@ c.execute("""CREATE TABLE IF NOT EXISTS Visitors(
     work_place TEXT,
     event_id INTEGER
     )
-    """
-)
+    """)
 conn.commit()
 conn.close()
 
@@ -72,7 +118,7 @@ lbl.place(x=x_listbox-10, y=y_init-20)
 # события на стартовом окне
 btn_add_place.config(command=lambda: btn_add_place_click(ent_add_place, listbox_places))
 bnt_delete_place.config(command=lambda: btn_delete_place_click(listbox_places))
-
+btn_show_events.config(command=lambda: btn_show_events_click())
 
 root_init.mainloop()
 
