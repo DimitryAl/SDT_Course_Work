@@ -110,15 +110,39 @@ def func7():
     conn = sqlite3.connect('Data.bd')
     c = conn.cursor()
     c.execute("""SELECT id FROM Events WHERE title=? AND date=? """, (title, date))
-    id = c.fetchone()
-    if id == None:
+    ID = c.fetchone()
+    if ID == None:
         print('fuck off')
         return
-    c.execute("""DELETE FROM Visitors WHERE event_id=?""", id)
+    c.execute("""DELETE FROM Visitors WHERE event_id=?""", ID)
     conn.commit()
-    c.execute("""DELETE FROM Events WHERE id=?""", id)
+    c.execute("""DELETE FROM Events WHERE id=?""", ID)
     conn.commit()
     conn.close()
+
+def func8():
+    name = input('Имя посетителя')
+    title = input('Введите название мероприятия')
+    date = input('Введите дату')
+    conn = sqlite3.connect('Data.bd')
+    c = conn.cursor()
+    c.execute("""SELECT id FROM Events WHERE title=? AND date=?""", title, date)
+    ID = c.fetchone()
+    c.execute("""DELETE FROM Visitors WHERE name=? AND event_id=?""", name, ID)
+    conn.commit()
+    conn.close()
+
+
+def func9():
+    date = input('Введите дату\t')
+
+    conn = sqlite3.connect('Data.bd')
+    c = conn.cursor()
+    c.execute("""SELECT * FROM Events WHERE date=? """, (date,))
+    table = from_db_cursor(c)
+    print(table)
+    conn.close()
+
 
 
 # создаём или открываем файл с бд
@@ -152,14 +176,14 @@ c.execute("""CREATE TABLE IF NOT EXISTS Visitors(
     name TEXT,
     age INTEGER,
     work TEXT,
-    FOREIGN KEY(event_id) REFERENCES Evens(id)
+    FOREIGN KEY(event_id) REFERENCES Events(id)
     )
     """)
 conn.commit()
 conn.close()
 
 
-print('1)Вывести список заведений')
+print('1)Вывести список культурных заведений')
 print('2)Вывести список мероприятий')
 print('3)Добавить вид культурного заведения')
 print('4)Добавить мероприятие')
@@ -197,6 +221,12 @@ while True:
 
     if n == '7':
         func7()
+
+    if n == '8':
+        func8()
+
+    if n == '9':
+        func9()
 
     if n == '0':
         break
