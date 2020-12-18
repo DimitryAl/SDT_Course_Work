@@ -6,7 +6,6 @@ from prettytable import from_db_cursor
 def Places_output():
     conn = sqlite3.connect('Data.bd')
     c = conn.cursor()
-    
     c.execute("SELECT * FROM Places")
     table = from_db_cursor(c)
     print(table)
@@ -46,7 +45,7 @@ def Add_event():
     atickets = int(input('Введите кол-во доступных билетов мероприятия:\t'))
     stickets = int(input('Введите кол-во проданных билетов мероприятия:\t'))
     price = float(input('Введите цену билета на мероприятия:\t'))
-    c.execute("""INSERT INTO Events (place_id, type, title, date, time, aticket, sticket, price) VALUES (?,?,?,?,?,?,?,?)""",
+    c.execute("""INSERT INTO Events (place_id, type, title, date, time, available_ticket, sold_ticket, price) VALUES (?,?,?,?,?,?,?,?)""",
                 (id[0], tip, name, date, time, atickets, stickets, price))
     conn.commit()
     conn.close()
@@ -64,16 +63,16 @@ def Add_visitor():
     name = input('Введите ФИО:\t')
     age = input('Введите возраст:\t')
     work = input('Введите профессию:\t')
-    c.execute("""SELECT aticket, sticket FROM Events WHERE title=? AND date=?""", (event, date))
+    c.execute("""SELECT available_ticket, sold_ticket FROM Events WHERE title=? AND date=?""", (event, date))
     tickets = c.fetchone()
     if tickets[0] == 0:
         print('На данное мероприятие все билеты проданы!')
         return
     available_tickets = tickets[0] - 1
     sold_tickets = tickets[1] + 1
-    c.execute("""UPDATE Events SET aticket=?, sticket=? WHERE id=? AND date=?""", (available_tickets, sold_tickets, ID[0], date))
+    c.execute("""UPDATE Events SET available_ticket=?, sold_ticket=? WHERE id=? AND date=?""", (available_tickets, sold_tickets, ID[0], date))
     conn.commit()
-    c.execute("""INSERT INTO Visitors (event_id,name, age, work) VALUES (?,?,?,?)""", (ID[0], name, age, work))
+    c.execute("""INSERT INTO Visitors (event_id,name, age, profession) VALUES (?,?,?,?)""", (ID[0], name, age, work))
     conn.commit()
     conn.close()
 
@@ -85,12 +84,12 @@ def Delete_place():
     c.execute("""SELECT id FROM Places WHERE type=?""", (place,))
     place_id = c.fetchone()
     if place_id == None:
-        print('fuck off')
+        print('Культурное заведение отсутствует в базе!')
         return
     c.execute("""SELECT id FROM Events WHERE place_id=?""", (place_id))
     event_id = c.fetchall()
     if event_id == None:
-        print('fuck off')
+        print('Мероприятие отсутвует!')
         return
     for id in event_id:
         c.execute("""DELETE FROM Visitors WHERE event_id=?""", id)
@@ -105,7 +104,7 @@ def Delete_place():
 def Visitors_output():
     conn = sqlite3.connect('Data.bd')
     c = conn.cursor()
-    c.execute("""SELECT e.title, v.name, v.age, v.work FROM 'Visitors' v 
+    c.execute("""SELECT e.title, e.date, v.name, v.age, v.profession FROM 'Visitors' v 
                 INNER JOIN 'Events' e ON v.event_id=e.id """)
     table = from_db_cursor(c)
     print(table)
@@ -121,7 +120,7 @@ def Delete_event():
     c.execute("""SELECT id FROM Events WHERE title=? AND date=? """, (title, date))
     ID = c.fetchone()
     if ID == None:
-        print('fuck off')
+        print('Мероприятие отсутствует!')
         return
     c.execute("""DELETE FROM Visitors WHERE event_id=?""", ID)
     conn.commit()
@@ -130,23 +129,24 @@ def Delete_event():
     conn.close()
 
 def Delete_visitor():
-    name = input('Имя посетителя')
-    title = input('Введите название мероприятия')
-    date = input('Введите дату')
+    name = input('Имя посетителя\t')
+    title = input('Введите название мероприятия\t')
+    date = input('Введите дату\t')
     conn = sqlite3.connect('Data.bd')
     c = conn.cursor()
-    c.execute("""SELECT id FROM Events WHERE title=? AND date=?""", title, date)
+    c.execute("""SELECT id FROM Events WHERE title=? AND date=?""", (title, date))
     ID = c.fetchone()
     if ID == None:
         print('Такого мероприятия нет!')
-    
-    c.execute("""SELECT aticket, sticket FROM Events WHERE title=? AND date=?""", (name, date))
+        return
+    #c.execute("""SELECT available_ticket, sold_ticket FROM Events WHERE title=? AND date=?""", (name, date))
+    c.execute("""SELECT available_ticket, sold_ticket FROM Events WHERE id=?""", (ID[0],))
     tickets = c.fetchone()
     available_tickets = tickets[0] + 1
     sold_tickets = tickets[1] - 1
-    c.execute("""UPDATE Events SET aticket=?, sticket=? WHERE id=? AND date=?""", (available_tickets, sold_tickets, ID[0], date))
+    c.execute("""UPDATE Events SET available_ticket=?, sold_ticket=? WHERE id=? AND date=?""", (available_tickets, sold_tickets, ID[0], date))
     conn.commit()
-    c.execute("""DELETE FROM Visitors WHERE name=? AND event_id=?""", name, ID)
+    c.execute("""DELETE FROM Visitors WHERE name=? AND event_id=?""", (name, ID[0]))
     conn.commit()
     conn.close()
 
@@ -182,8 +182,8 @@ c.execute("""CREATE TABLE IF NOT EXISTS Events(
     title TEXT,
     date TEXT,
     time TEXT,
-    a_ticket INTEGER,
-    sticket INTEGER,
+    available_ticket INTEGER,
+    sold_ticket INTEGER,
     price REAL,
     FOREIGN KEY(place_id) REFERENCES Places(id)
     )
@@ -193,7 +193,7 @@ c.execute("""CREATE TABLE IF NOT EXISTS Visitors(
     event_id INTEGER,
     name TEXT,
     age INTEGER,
-    work TEXT,
+    profession TEXT,
     FOREIGN KEY(event_id) REFERENCES Events(id)
     )
     """)
@@ -225,6 +225,7 @@ while True:
                 Delete_place()
             if n == '0':
                 break
+            Places_output()
 
     if n == '2':
         Events_output()
@@ -239,6 +240,7 @@ while True:
                     Delete_event()
             if n == '0':
                 break
+            Events_output()
 
     if n == '3':
         Visitors_output()
@@ -253,10 +255,12 @@ while True:
                 Delete_visitor()
             if n == '0':
                 break
-    
+            Visitors_output()
+
     if n == '4':
         Date_search()
     
+    print('\n')
     print('1)Вывести список культурных заведений')
     print('2)Вывести список мероприятий')
     print('3)Вывести всех посетителей')
