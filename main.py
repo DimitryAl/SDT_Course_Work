@@ -3,7 +3,7 @@ from prettytable import PrettyTable
 from prettytable import from_db_cursor
 
 
-def func1():
+def Places_output():
     conn = sqlite3.connect('Data.bd')
     c = conn.cursor()
     
@@ -13,7 +13,7 @@ def func1():
     conn.close()
 
 
-def func2():
+def Events_output():
     conn = sqlite3.connect('Data.bd')
     c = conn.cursor()
     c.execute("SELECT * FROM Events")
@@ -22,7 +22,7 @@ def func2():
     conn.close()
 
 
-def func3():
+def Add_place():
     text = input('Введите название:\t')
     conn = sqlite3.connect('Data.bd')
     c = conn.cursor()
@@ -31,7 +31,7 @@ def func3():
     conn.close()
 
 
-def func4():
+def Add_event():
     place = input('Введите место проведения:\t')
     conn = sqlite3.connect('Data.bd')
     c = conn.cursor()
@@ -52,24 +52,33 @@ def func4():
     conn.close()
 
 
-def func5():
+def Add_visitor():
     event = input('Введите мероприятие:\t')
+    date = input('Введите дату проведения:\t')
     conn = sqlite3.connect('Data.bd')
     c = conn.cursor()
-    c.execute("SELECT id FROM Events WHERE title=?", (event,))
-    id = c.fetchone()
-    if id == None:
+    c.execute("SELECT id FROM Events WHERE title=? AND date=?", (event, date))
+    ID = c.fetchone()
+    if ID == None:
         return
     name = input('Введите ФИО:\t')
     age = input('Введите возраст:\t')
-    work = input('Введите место работы:\t')
-    #изменить кол-во билетов
-    c.execute("""INSERT INTO Visitors (event_id,name, age, work) VALUES (?,?,?,?)""", (id[0], name, age, work))
+    work = input('Введите профессию:\t')
+    c.execute("""SELECT aticket, sticket FROM Events WHERE title=? AND date=?""", (event, date))
+    tickets = c.fetchone()
+    if tickets[0] == 0:
+        print('На данное мероприятие все билеты проданы!')
+        return
+    available_tickets = tickets[0] - 1
+    sold_tickets = tickets[1] + 1
+    c.execute("""UPDATE Events SET aticket=?, sticket=? WHERE id=? AND date=?""", (available_tickets, sold_tickets, ID[0], date))
+    conn.commit()
+    c.execute("""INSERT INTO Visitors (event_id,name, age, work) VALUES (?,?,?,?)""", (ID[0], name, age, work))
     conn.commit()
     conn.close()
 
 
-def func6():
+def Delete_place():
     place = input('Input place type:\t')
     conn = sqlite3.connect('Data.bd')
     c = conn.cursor()
@@ -93,7 +102,7 @@ def func6():
     conn.close()
 
 
-def func10():
+def Visitors_output():
     conn = sqlite3.connect('Data.bd')
     c = conn.cursor()
     c.execute("""SELECT e.title, v.name, v.age, v.work FROM 'Visitors' v 
@@ -103,7 +112,7 @@ def func10():
     conn.close()
 
 
-def func7():
+def Delete_event():
     title = input('Введите название мероприятия:\t')
     date = input('Введите дату мероприятия:\t')
 
@@ -120,7 +129,7 @@ def func7():
     conn.commit()
     conn.close()
 
-def func8():
+def Delete_visitor():
     name = input('Имя посетителя')
     title = input('Введите название мероприятия')
     date = input('Введите дату')
@@ -128,12 +137,21 @@ def func8():
     c = conn.cursor()
     c.execute("""SELECT id FROM Events WHERE title=? AND date=?""", title, date)
     ID = c.fetchone()
+    if ID == None:
+        print('Такого мероприятия нет!')
+    
+    c.execute("""SELECT aticket, sticket FROM Events WHERE title=? AND date=?""", (name, date))
+    tickets = c.fetchone()
+    available_tickets = tickets[0] + 1
+    sold_tickets = tickets[1] - 1
+    c.execute("""UPDATE Events SET aticket=?, sticket=? WHERE id=? AND date=?""", (available_tickets, sold_tickets, ID[0], date))
+    conn.commit()
     c.execute("""DELETE FROM Visitors WHERE name=? AND event_id=?""", name, ID)
     conn.commit()
     conn.close()
 
 
-def func9():
+def Date_search():
     date = input('Введите дату\t')
 
     conn = sqlite3.connect('Data.bd')
@@ -164,7 +182,7 @@ c.execute("""CREATE TABLE IF NOT EXISTS Events(
     title TEXT,
     date TEXT,
     time TEXT,
-    aticket INTEGER,
+    a_ticket INTEGER,
     sticket INTEGER,
     price REAL,
     FOREIGN KEY(place_id) REFERENCES Places(id)
@@ -185,49 +203,63 @@ conn.close()
 
 print('1)Вывести список культурных заведений')
 print('2)Вывести список мероприятий')
-print('3)Добавить вид культурного заведения')
-print('4)Добавить мероприятие')
-print('5)Добавить посетителя')
-print('6)Удалить заведение')
-print('7)Удалить мероприятие')
-print('8)Удалить посетителя')
-print('9)Поиск по дате')
-print('10)Вывести всех посетителей')
+print('3)Вывести всех посетителей')
+print('4)Поиск по дате')
 print('0)Выход')
-
+n = input()
 while True:
-    n = input()
-
-    if n == '1':
-        func1()
-
-    if n == '2':
-        func2()
-
-    if n == '3':
-        func3()
-
-    if n == '4':
-        func4()
-
-    if n == '5':
-        func5()
-
-    if n == '10':
-        func10()
-
-    if n == '6':
-        func6()
-
-    if n == '7':
-        func7()
-
-    if n == '8':
-        func8()
-
-    if n == '9':
-        func9()
-
+    
     if n == '0':
         break
 
+    if n == '1':
+        Places_output()
+        while True:
+            print('1)Добавить культурное заведение')
+            print('2)Удалить заведение')
+            print('0)Назад')
+            n = input()
+            if n == '1':
+                Add_place()
+            if n == '2':
+                Delete_place()
+            if n == '0':
+                break
+
+    if n == '2':
+        Events_output()
+        while True:
+            print('1)Добавить мероприятие')
+            print('2)Удалить мероприятие')
+            print('0)Назад')
+            n = input()
+            if n == '1':
+                Add_event()
+            if n == '2':
+                    Delete_event()
+            if n == '0':
+                break
+
+    if n == '3':
+        Visitors_output()
+        while True:
+            print('1)Добавить посетителя')
+            print('2)Удалить посетителя')
+            print('0)Назад')
+            n = input()
+            if n == '1':
+                Add_visitor()
+            if n == '2':
+                Delete_visitor()
+            if n == '0':
+                break
+    
+    if n == '4':
+        Date_search()
+    
+    print('1)Вывести список культурных заведений')
+    print('2)Вывести список мероприятий')
+    print('3)Вывести всех посетителей')
+    print('4)Поиск по дате')
+    print('0)Выход')
+    n = input()
